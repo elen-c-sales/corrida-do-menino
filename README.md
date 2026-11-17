@@ -73,12 +73,13 @@ python corrida.py
 * `recorde.txt`: arquivo de texto gerado e atualizado automaticamente para armazenar a maior pontuação atingida.
 * `README.md`: documentação geral do projeto.
 * `LICENSE`: texto integral da licença livre MIT.
+* `pico8/dino.p8`: versão PICO-8 do jogo, pronta para o R36S com TreeFrogUI.
 
 ## Integração com o Portátil R36S
 
 Este repositório serve como bancada de testes para a versão PICO-8, que roda no R36S com TreeFrogUI.
 
-A edição correspondente localiza-se em `C:\Users\usuario\dev\r36s\roms\pico8\dino.p8` e deve ser copiada para o diretório `roms/pico8/` no cartão de memória com o ambiente TreeFrogUI configurado.
+A edição correspondente está versionada neste repositório em `pico8/dino.p8` e também na área de trabalho em `C:\Users\usuario\dev\r36s\roms\pico8\dino.p8`. Para usar no console, copie o arquivo para o diretório `roms/pico8/` no cartão de memória com o ambiente TreeFrogUI configurado.
 
 A versão PICO-8 foi reescrita para acompanhar este projeto e inclui:
 
