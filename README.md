@@ -1,6 +1,6 @@
 # Corrida do Menino
 
-Jogo de corrida infinita em 2D desenvolvido em Python com Pygame, concebido como versão de computador e bancada de testes para o console portátil R36S (via PICO-8 e TreeFrogUI).
+Jogo de corrida infinita em 2D desenvolvido em Python com Pygame, concebido como versão de computador e bancada de testes para o console portátil R36S (via PICO-8 e TreeFrogUI). Também roda no navegador, empacotado em WebAssembly com Pygbag.
 
 O projeto retrata o cotidiano e o imaginário de Sauron no sítio da família no estado do Pará, reunindo vegetação amazônica e de quintal, aparelhos de tecnologia retrô e gambiarra eletrônica, além dos animais da casa.
 
@@ -9,6 +9,32 @@ O projeto retrata o cotidiano e o imaginário de Sauron no sítio da família no
 ![Demonstração do jogo](captura.gif)
 
 Versão reduzida do mesmo GIF: [`captura-480p.gif`](captura-480p.gif).
+
+## Jogar no Navegador
+
+O jogo também roda direto no navegador, sem instalar nada, graças ao [Pygbag](https://pygame-web.github.io/) (Python + Pygame compilados para WebAssembly):
+
+**https://elen-c-sales.github.io/corrida-do-menino/**
+
+* A publicação é automática a cada push na branch `main`, pelo workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) (GitHub Actions + GitHub Pages).
+* Na primeira visita, o navegador baixa o runtime Python/Pygame do CDN do Pygbag; por isso o carregamento inicial pode levar alguns segundos.
+* O recorde é salvo no `localStorage` do navegador, já que o sistema de arquivos do Pygbag é temporário.
+* A tela do jogo (640×360) aparece centralizada, com largura máxima de 960px e proporção 16:9 preservada. Para mudar o tamanho, ajuste a variável CSS `--largura-max-jogo` em `tools/build_web.py`.
+* O jogo foi pensado para navegador de desktop com teclado.
+
+> Para ativar a publicação, habilite em **Settings → Pages → Build and deployment → Source: GitHub Actions**. GitHub Pages em repositórios privados exige um plano compatível.
+
+### Gerar a versão web localmente
+
+```bash
+pip install -r requirements-web.txt
+python tools/build_web.py
+python -m http.server 8080 --directory build/web
+```
+
+Abra <http://127.0.0.1:8080/>. Também é possível usar `python tools/build_web.py --serve`, que gera o build e sobe um servidor local em <http://127.0.0.1:8080/> (use `--port` para trocar a porta).
+
+Evite servir o build na porta 8000 com outro servidor: o Pygbag reserva essa porta para o proxy de desenvolvimento e o jogo tentaria buscar as dependências nela.
 
 ## Dedicatória
 
@@ -65,6 +91,12 @@ Para iniciar o jogo:
 python corrida.py
 ```
 
+Para a versão web, as dependências de build são instaladas separadamente:
+
+```bash
+pip install -r requirements-web.txt
+```
+
 ## Controles
 
 * **ESPAÇO**, **SETA PARA CIMA** ou **W**: pular
@@ -72,15 +104,20 @@ python corrida.py
 * **C**, **TAB** ou **E**: alternar entre os gatinhos ajudantes desbloqueados
 * **1**, **2**, **3**, **4**: selecionar diretamente Catarino, Coraline, Hanna ou Scar (quando desbloqueados)
 * **R** ou **ESPAÇO**: reiniciar a partida na tela de fim de jogo
-* **ESC**: encerrar o programa
+* **ESC**: encerrar o programa (na versão web o ESC é ignorado, para não fechar a aba)
 
 ## Estrutura do Repositório
 
 * `corrida.py`: código-fonte completo do jogo, incluindo renderização procedural em pixel art, física, sistema de partículas e lógica de progressão.
+* `main.py`: ponto de entrada da versão web, com o loop assíncrono exigido pelo Pygbag.
 * `captura.gif`: demonstração do jogo em GIF (640×360, 20 fps) gerada pelo script de captura.
 * `captura-480p.gif`: versão reduzida (480×270) da mesma demonstração.
 * `tools/captura_gif.py`: gerador dos GIFs de demonstração; usa um autopiloto e não altera o recorde do jogador.
-* `recorde.txt`: arquivo de texto gerado e atualizado automaticamente para armazenar a maior pontuação atingida.
+* `tools/build_web.py`: gera a versão web com Pygbag em `build/web/`.
+* `pygbag.ini`: lista o que fica fora do pacote web (GIFs, `pico8/`, `tools/` etc.).
+* `requirements-web.txt`: dependências para gerar a versão web.
+* `.github/workflows/pages.yml`: build e publicação automática no GitHub Pages.
+* `recorde.txt`: arquivo de texto gerado e atualizado automaticamente para armazenar a maior pontuação atingida na versão desktop (na versão web o recorde fica no `localStorage`).
 * `README.md`: documentação geral do projeto.
 * `LICENSE`: texto integral da licença livre MIT.
 * `pico8/dino.p8`: versão PICO-8 do jogo, pronta para o R36S com TreeFrogUI.

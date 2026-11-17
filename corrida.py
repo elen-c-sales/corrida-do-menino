@@ -12,6 +12,7 @@ Gatinhos ajudantes (desbloqueados pegando trequinhos tecnologicos):
   3. Hanna (branca com manchas rajadas, gordinha) -> Escudo que salva de 1 batida
   4. Scar (rajado com peito branco, grande e gordinho) -> Trequinhos em dobro + super pontos
 """
+import asyncio
 import math
 import os
 import random
@@ -24,6 +25,7 @@ ALTURA = 360
 CHAO_Y = 294
 FPS = 60
 ARQUIVO_RECORDE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recorde.txt")
+CHAVE_RECORDE_WEB = "corrida-do-menino:recorde"
 
 # Paleta do Sitio ao Entardecer / Noite Tropical no Para
 COR_CEU_TOPO = (14, 22, 42)
@@ -111,7 +113,47 @@ GATINHOS_INFO = [
 ]
 
 
+def em_navegador():
+    """Verdadeiro quando o jogo roda no navegador via Pygbag/Pyodide (WASM)."""
+    return sys.platform in ("emscripten", "wasi") or "pyodide" in sys.modules
+
+
+def _armazenamento_web():
+    """Acesso ao localStorage do navegador, quando disponivel.
+
+    O sistema de arquivos do Pygbag vive apenas em memoria (MEMFS), entao o
+    recorde precisa ser salvo no localStorage para sobreviver ao recarregamento.
+    """
+    if not em_navegador():
+        return None
+    try:
+        import platform as plataforma
+
+        return plataforma.window.localStorage
+    except Exception:
+        return None
+
+
+def criar_fonte(nome, tamanho, negrito=True):
+    """Cria uma fonte adequada ao ambiente atual.
+
+    No navegador nao existem fontes do sistema como o Consolas, portanto usamos
+    a fonte embutida no pygame (freesansbold) com um tamanho equivalente.
+    """
+    if em_navegador():
+        return pygame.font.Font(None, tamanho + (3 if negrito else 2))
+    return pygame.font.SysFont(nome, tamanho, bold=negrito)
+
+
 def carregar_recorde():
+    armazenamento = _armazenamento_web()
+    if armazenamento is not None:
+        try:
+            valor = armazenamento.getItem(CHAVE_RECORDE_WEB)
+            return int(valor) if valor else 0
+        except (AttributeError, TypeError, ValueError):
+            return 0
+
     try:
         with open(ARQUIVO_RECORDE, "r", encoding="utf-8") as arquivo:
             return int(arquivo.read().strip())
@@ -120,6 +162,14 @@ def carregar_recorde():
 
 
 def salvar_recorde(valor):
+    armazenamento = _armazenamento_web()
+    if armazenamento is not None:
+        try:
+            armazenamento.setItem(CHAVE_RECORDE_WEB, str(valor))
+        except (AttributeError, TypeError):
+            pass
+        return
+
     try:
         with open(ARQUIVO_RECORDE, "w", encoding="utf-8") as arquivo:
             arquivo.write(str(valor))
@@ -439,7 +489,7 @@ class GatinhoAjudante:
         alvo_y = self.historico_y[0]
         self.y += (alvo_y - self.y) * 0.35
         self.x = menino_x - 38
-        self.fase += velocidade * 0.28
+        self.fase += 0.06 + velocidade * 0.032
 
     def desenhar(self, tela, id_gato, escudo_pronto=False):
         if not id_gato:
@@ -719,7 +769,9 @@ class Menino:
             if estava_no_ar:
                 self.acabou_de_pousar = True
 
-        self.corrindo += velocidade * 0.22
+        # Cadencia do ciclo de corrida: ~2,6 ciclos por segundo no inicio e
+        # ~4,2 no maximo, em vez de acelerar junto com a dificuldade.
+        self.corrindo += 0.15 + velocidade * 0.042
 
     def hitbox(self):
         if self.agachado:
@@ -1015,10 +1067,11 @@ class Jogo:
         self.tela = pygame.display.set_mode((LARGURA, ALTURA))
         pygame.display.set_caption("Corrida do Menino - Sitio & Gambiarra Tech")
         self.clock = pygame.time.Clock()
-        self.fonte_mini = pygame.font.SysFont("consolas", 13, bold=True)
-        self.fonte = pygame.font.SysFont("consolas", 16, bold=True)
-        self.fonte_grande = pygame.font.SysFont("consolas", 30, bold=True)
+        self.fonte_mini = criar_fonte("consolas", 13)
+        self.fonte = criar_fonte("consolas", 16)
+        self.fonte_grande = criar_fonte("consolas", 30)
         self.recorde = carregar_recorde()
+        self.rodando = True
 
         self.ceu_surf = criar_ceu_sitio()
         self.estrelas = [Estrela() for _ in range(38)]
@@ -1119,12 +1172,15 @@ class Jogo:
     def eventos(self):
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                self.rodando = False
+                return
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                    if em_navegador():
+                        # No navegador ESC nao deve fechar a aba: apenas ignora.
+                        continue
+                    self.rodando = False
+                    return
                 if self.estado == "titulo":
                     if evento.key in (pygame.K_SPACE, pygame.K_UP, pygame.K_RETURN, pygame.K_w):
                         self.reiniciar(iniciar_jogando=True)
@@ -1437,11 +1493,27 @@ class Jogo:
         pygame.display.flip()
 
     def executar(self):
-        while True:
+        while self.rodando:
             self.eventos()
             self.atualizar()
             self.desenhar()
             self.clock.tick(FPS)
+        pygame.quit()
+
+    async def executar_async(self):
+        """Loop usado no navegador (Pygbag/WASM).
+
+        O `clock.tick(FPS)` antes do `await asyncio.sleep(0)` e o padrao
+        recomendado pelo Pygbag: ele limita o jogo a 60 quadros por segundo
+        mesmo em monitores de 120/144 Hz.
+        """
+        while self.rodando:
+            self.eventos()
+            self.atualizar()
+            self.desenhar()
+            self.clock.tick(FPS)
+            await asyncio.sleep(0)
+        pygame.quit()
 
 
 def main():

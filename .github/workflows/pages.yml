@@ -1,0 +1,64 @@
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Gerar build web (Pygbag)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v7
+
+      - name: Configurar Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-web.txt
+
+      - name: Instalar Pygbag
+        run: pip install -r requirements-web.txt
+
+      - name: Reaproveitar cache do runtime web
+        uses: actions/cache@v6
+        with:
+          path: |
+            build/web-cache
+            build/version.txt
+          key: pygbag-${{ hashFiles('requirements-web.txt') }}-${{ runner.os }}
+
+      - name: Gerar a versao web
+        run: python tools/build_web.py
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Enviar artefato do site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/web
+
+  deploy:
+    name: Publicar
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
