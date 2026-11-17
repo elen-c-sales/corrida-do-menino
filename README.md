@@ -4,6 +4,12 @@ Jogo de corrida infinita em 2D desenvolvido em Python com Pygame, concebido como
 
 O projeto retrata o cotidiano e o imaginário de Sauron no sítio da família no estado do Pará, reunindo vegetação amazônica e de quintal, aparelhos de tecnologia retrô e gambiarra eletrônica, além dos animais da casa.
 
+## Demonstração
+
+![Demonstração do jogo](captura.gif)
+
+Versão reduzida do mesmo GIF: [`captura-480p.gif`](captura-480p.gif).
+
 ## Dedicatória
 
 Este jogo é dedicado ao querido filho Sauron e aos nossos amados filhotes: Misty, Saddam, Shelby, Catarino, Coraline, Hanna, Scar e Jabotão.
@@ -45,6 +51,7 @@ O jogador pode alternar livremente entre os gatos já desbloqueados durante a co
 
 * Python 3.7 ou superior
 * Biblioteca Pygame 2.0 ou superior
+* Pillow (apenas para gerar os GIFs de demonstração)
 
 Para instalar a dependência necessária, execute no terminal:
 
@@ -70,6 +77,9 @@ python corrida.py
 ## Estrutura do Repositório
 
 * `corrida.py`: código-fonte completo do jogo, incluindo renderização procedural em pixel art, física, sistema de partículas e lógica de progressão.
+* `captura.gif`: demonstração do jogo em GIF (640×360, 20 fps) gerada pelo script de captura.
+* `captura-480p.gif`: versão reduzida (480×270) da mesma demonstração.
+* `tools/captura_gif.py`: gerador dos GIFs de demonstração; usa um autopiloto e não altera o recorde do jogador.
 * `recorde.txt`: arquivo de texto gerado e atualizado automaticamente para armazenar a maior pontuação atingida.
 * `README.md`: documentação geral do projeto.
 * `LICENSE`: texto integral da licença livre MIT.
