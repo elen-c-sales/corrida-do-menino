@@ -76,7 +76,32 @@ python corrida.py
 
 ## Integração com o Portátil R36S
 
-A edição correspondente para o sistema PICO-8 localiza-se em `C:\Users\usuario\dev\r36s\roms\pico8\dino.p8` e deve ser copiada para o diretório `roms/pico8/` no cartão de memória com o ambiente TreeFrogUI configurado.
+Este repositório serve como bancada de testes para a versão PICO-8, que roda no R36S com TreeFrogUI.
+
+A edição correspondente localiza-se em `C:\Users\usuario\dev\r36s\roms\pico8\dino.p8` e deve ser copiada para o diretório `roms/pico8/` no cartão de memória com o ambiente TreeFrogUI configurado.
+
+A versão PICO-8 foi reescrita para acompanhar este projeto e inclui:
+
+* Sauron com cabelo comprido castanho, fone no pescoço e bolsa com antena.
+* Cenário do sítio ao entardecer com céu em camadas, mata com parallax e muro de tijolinhos.
+* Misty, Shelby, Saddam e o jabuti Jabotão correndo ao fundo.
+* Os trequinhos tecnológicos para coleta e os quatro gatinhos ajudantes com seus poderes.
+* Toco, galho de mangueira e bananeira como obstáculos.
+* Recorde persistido com `dset()`.
+
+### Controles no portátil
+
+* **A** ou **SETA PARA CIMA**: pular
+* **SETA PARA BAIXO**: agachar
+* **B**: alternar entre os gatinhos desbloqueados
+
+### Outro cartucho disponível
+
+Além do `dino.p8`, também está pronto o cartucho `asteroids.p8`, no mesmo diretório `roms/pico8`, uma versão em Lua do projeto pygame-asteroids.
+
+### Guia completo
+
+O guia de reparo, preparação do cartão, organização dos ROMs e instalação do TreeFrogUI está em `C:\Users\usuario\dev\r36s\guia-reparo-gb350.md`.
 
 ## Licença
 
